@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -11,7 +10,7 @@ func NewHTTPServer(addr string) *http.Server {
 	mux.HandleFunc("POST /", handler.handleProduce)
 	mux.HandleFunc("GET /", handler.handleConsume)
 	return &http.Server{
-		Addr:    fmt.Sprintf(":%s", addr),
+		Addr:    addr,
 		Handler: mux,
 	}
 }
