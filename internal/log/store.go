@@ -57,13 +57,31 @@ func (s *store) Read(pos uint64) ([]byte, error) {
 		return nil, err
 	}
 	headerBuf := make([]byte, headerWidth)
-	if _, err := s.ReadAt(headerBuf, int64(pos)); err != nil {
+	if _, err := s.File.ReadAt(headerBuf, int64(pos)); err != nil {
 		return nil, err
 	}
 	lenToRead := byteOrder.Uint64(headerBuf)
 	valueBuf := make([]byte, lenToRead)
-	if _, err := s.ReadAt(valueBuf, int64(pos+headerWidth)); err != nil {
+	if _, err := s.File.ReadAt(valueBuf, int64(pos+headerWidth)); err != nil {
 		return nil, err
 	}
 	return valueBuf, nil
+}
+
+func (s *store) ReadAt(p []byte, off int64) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.buf.Flush(); err != nil {
+		return 0, err
+	}
+	return s.File.ReadAt(p, off)
+}
+
+func (s *store) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.buf.Flush(); err != nil {
+		return err
+	}
+	return s.File.Close()
 }
