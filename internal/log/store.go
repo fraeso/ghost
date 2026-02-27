@@ -10,7 +10,7 @@ import (
 var byteOrder = binary.BigEndian
 
 const (
-	headerWidth = 8
+	headerSize = 8
 )
 
 type store struct {
@@ -45,7 +45,7 @@ func (s *store) Append(p []byte) (n uint64, pos uint64, err error) {
 		return 0, 0, err
 	}
 
-	writtenBytes += headerWidth
+	writtenBytes += headerSize
 	s.size += uint64(writtenBytes)
 	return uint64(writtenBytes), pos, nil
 }
@@ -56,13 +56,13 @@ func (s *store) Read(pos uint64) ([]byte, error) {
 	if err := s.buf.Flush(); err != nil {
 		return nil, err
 	}
-	headerBuf := make([]byte, headerWidth)
+	headerBuf := make([]byte, headerSize)
 	if _, err := s.File.ReadAt(headerBuf, int64(pos)); err != nil {
 		return nil, err
 	}
 	lenToRead := byteOrder.Uint64(headerBuf)
 	valueBuf := make([]byte, lenToRead)
-	if _, err := s.File.ReadAt(valueBuf, int64(pos+headerWidth)); err != nil {
+	if _, err := s.File.ReadAt(valueBuf, int64(pos+headerSize)); err != nil {
 		return nil, err
 	}
 	return valueBuf, nil
